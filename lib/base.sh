@@ -1,5 +1,15 @@
 #! bash oh-my-bash.module
-#  ---------------------------------------------------------------------------
+#------------------------------------------------------------------------------
+# Note on copyright (2022-08-23): The contents of this file seems to have been
+# originally introduced in a blog post [1].  The author also put it on Gist
+# [2]. The blog post says "feel free to take whatever", but the license is not
+# explicitly specified.  Aliases are moved to general.aliases.sh.
+#
+# [1] Nathaniel Landau, "My Mac OSX Bash Profile",
+#     https://natelandau.com/my-mac-osx-bash_profile/, 2013-07-02.
+# [2] https://gist.github.com/natelandau/10654137
+#
+#------------------------------------------------------------------------------
 #
 #  Description:  This file holds all base BASH functions
 #
@@ -16,7 +26,7 @@
 #
 #  X.   Reminders & Notes
 #
-#  ---------------------------------------------------------------------------
+#------------------------------------------------------------------------------
 
 #   -----------------------------
 #   1.  MAKE TERMINAL BETTER
@@ -114,7 +124,7 @@ zipf () { zip -r "$1".zip "$1" ; }           # zipf:         To create a ZIP arc
 #   mkiso:  creates iso from current dir in the parent dir (unless defined)
 #   ---------------------------------------------------------
     mkiso () {
-      if type "mkisofs" > /dev/null; then
+      if _omb_util_command_exists mkisofs; then
         if [ -z ${1+x} ]; then
           local isoname=${PWD##*/}
         else
@@ -187,10 +197,10 @@ bigfind() {
 #   ips:  display all ip addresses for this host
 #   -------------------------------------------------------------------
     ips () {
-      if command -v ifconfig &>/dev/null
+      if _omb_util_command_exists ifconfig
       then
         ifconfig | awk '/inet /{ print $2 }'
-      elif command -v ip &>/dev/null
+      elif _omb_util_command_exists ip
       then
         ip addr | grep -oP 'inet \K[\d.]+'
       else
@@ -260,12 +270,6 @@ bigfind() {
           du -h --max-depth=1
         fi
       fi
-    }
-
-#   command_exists: checks for existence of a command (0 = true, 1 = false)
-#   -------------------------------------------------------------------
-    command_exists () {
-      type "$1" &> /dev/null ;
     }
 
 #   pickfrom: picks random line from file

@@ -388,3 +388,24 @@ _omb_util_glob_expand() {
   [[ :$shopt: == *:failglob:* ]] && shopt -s failglob
   return 0
 }
+
+_omb_util_alias() {
+  case ${OMB_DEFAULT_ALIASES:-enable} in
+  (disable) return 0 ;;
+  (check) alias -- "${1%%=*}" &>/dev/null && return 0 ;;
+  (enable) ;;
+  (*)
+    _omb_log_error "invalid value: OMB_DEFAULT_ALIASES='${OMB_DEFAULT_ALIASES-}' (expect: enable|disable|check)" >&2
+    return 2
+  esac
+  alias -- "$1"
+}
+
+function _omb_util_mktemp {
+  local template=tmp.oh-my-bash.XXXXXXXXXX
+  if _omb_util_command_exists mktemp; then
+    mktemp -t "$template"
+  else
+    m4 -D template="${TMPDIR:-/tmp}/$template" <<< 'mkstemp(template)'
+  fi
+}

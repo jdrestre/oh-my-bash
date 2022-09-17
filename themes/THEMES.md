@@ -188,6 +188,10 @@
 
 [![](purity/purity-dark.png)](purity/purity-dark.png)
 
+## `pzq`
+
+[![](pzq/pzq-dark.png)](pzq/pzq-dark.png)
+
 ## `rainbowbrite`
 
 [![](rainbowbrite/rainbowbrite-dark.png)](rainbowbrite/rainbowbrite-dark.png)
@@ -203,6 +207,10 @@
 ## `roderik`
 
 [![](roderik/roderik-dark.png)](roderik/roderik-dark.png)
+
+## `rr`
+
+[![](rr/rr-dark.png)](rr/rr-dark.png)
 
 ## `sexy`
 
