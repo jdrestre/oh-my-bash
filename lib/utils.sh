@@ -96,27 +96,27 @@ function _omb_util_defun_print {
 #
 
 if ((_omb_bash_version >= 40000)); then
-  _omb_util_command_exists() {
+  function _omb_util_command_exists {
     type -t -- "$@" &>/dev/null # bash-4.0
   }
-  _omb_util_binary_exists() {
+  function _omb_util_binary_exists {
     type -P -- "$@" &>/dev/null # bash-4.0
   }
 else
-  _omb_util_command_exists() {
+  function _omb_util_command_exists {
     while (($#)); do
       type -t -- "$1" &>/dev/null || return 1
       shift
     done
   }
-  _omb_util_binary_exists() {
+  function _omb_util_binary_exists {
     while (($#)); do
       type -P -- "$1" &>/dev/null || return 1
       shift
     done
   }
 fi
-_omb_util_function_exists() {
+function _omb_util_function_exists {
   declare -F "$@" &>/dev/null # bash-3.2
 }
 
@@ -126,7 +126,7 @@ _omb_util_function_exists() {
 # Use colors, but only if connected to a terminal, and that terminal
 # supports them.  These colors are intended to be used with `echo`
 #
-_omb_term_color_initialize() {
+function _omb_term_color_initialize {
   local name
   local -a normal_colors=(black brown green olive navy purple teal silver)
   local -a bright_colors=(gray red lime yellow blue magenta cyan white)
@@ -221,14 +221,14 @@ _omb_term_color_initialize
 #
 # Headers and Logging
 #
-_omb_log_header()    { printf "\n${_omb_term_bold}${_omb_term_violet}==========  %s  ==========${_omb_term_reset}\n" "$@"; }
-_omb_log_arrow()     { printf "➜ %s\n" "$@"; }
-_omb_log_success()   { printf "${_omb_term_green}✔ %s${_omb_term_reset}\n" "$@"; }
-_omb_log_error()     { printf "${_omb_term_brown}✖ %s${_omb_term_reset}\n" "$@"; }
-_omb_log_warning()   { printf "${_omb_term_olive}➜ %s${_omb_term_reset}\n" "$@"; }
-_omb_log_underline() { printf "${_omb_term_underline}${_omb_term_bold}%s${_omb_term_reset}\n" "$@"; }
-_omb_log_bold()      { printf "${_omb_term_bold}%s${_omb_term_reset}\n" "$@"; }
-_omb_log_note()      { printf "${_omb_term_underline}${_omb_term_bold}${_omb_term_navy}Note:${_omb_term_reset}  ${_omb_term_olive}%s${_omb_term_reset}\n" "$@"; }
+function _omb_log_header    { printf "\n${_omb_term_bold}${_omb_term_violet}==========  %s  ==========${_omb_term_reset}\n" "$@"; }
+function _omb_log_arrow     { printf "➜ %s\n" "$@"; }
+function _omb_log_success   { printf "${_omb_term_green}✔ %s${_omb_term_reset}\n" "$@"; }
+function _omb_log_error     { printf "${_omb_term_brown}✖ %s${_omb_term_reset}\n" "$@"; }
+function _omb_log_warning   { printf "${_omb_term_olive}➜ %s${_omb_term_reset}\n" "$@"; }
+function _omb_log_underline { printf "${_omb_term_underline}${_omb_term_bold}%s${_omb_term_reset}\n" "$@"; }
+function _omb_log_bold      { printf "${_omb_term_bold}%s${_omb_term_reset}\n" "$@"; }
+function _omb_log_note      { printf "${_omb_term_underline}${_omb_term_bold}${_omb_term_navy}Note:${_omb_term_reset}  ${_omb_term_olive}%s${_omb_term_reset}\n" "$@"; }
 
 #
 # USAGE FOR SEEKING CONFIRMATION
@@ -241,14 +241,14 @@ _omb_log_note()      { printf "${_omb_term_underline}${_omb_term_bold}${_omb_ter
 #   some other action
 # fi
 #
-seek_confirmation() {
+function seek_confirmation {
   printf "\\n${_omb_term_bold}%s${_omb_term_reset}" "$@"
-  read -p " (y/n) " -n 1
+  read -rp " (y/n) " -n 1
   printf "\\n"
 }
 
 # Test whether the result of an 'ask' is a confirmation
-is_confirmed() {
+function is_confirmed {
   [[ $REPLY =~ ^[Yy]$ ]]
 }
 
@@ -257,7 +257,7 @@ is_confirmed() {
 # $1 = OS to test
 # Usage: if is_os 'darwin'; then
 #
-is_os() {
+function is_os {
   [[ $OSTYPE == $1* ]]
 }
 
@@ -266,7 +266,7 @@ is_os() {
 # Usage: pushover "Title Goes Here" "Message Goes Here"
 # Credit: http://ryonsherman.blogspot.com/2012/10/shell-script-to-send-pushover.html
 #
-pushover () {
+function pushover {
   PUSHOVERURL="https://api.pushover.net/1/messages.json"
   API_KEY=$PUSHOVER_API_KEY
   USER_KEY=$PUSHOVER_USER_KEY
@@ -285,22 +285,23 @@ pushover () {
 }
 
 ## @fn _omb_util_get_shopt optnames...
+##   @var[out] __shopt
 if ((_omb_bash_version >= 40100)); then
-  _omb_util_get_shopt() { shopt=$BASHOPTS; }
+  function _omb_util_get_shopt { __shopt=$BASHOPTS; }
 else
-  _omb_util_get_shopt() {
-    shopt=
+  function _omb_util_get_shopt {
+    __shopt=
     local opt
     for opt; do
       if shopt -q "$opt" &>/dev/null; then
-        shopt=${shopt:+$shopt:}$opt
+        __shopt=${__shopt:+$__shopt:}$opt
       fi
     done
   }
 fi
 
 _omb_util_unload_hook=()
-_omb_util_unload() {
+function _omb_util_unload {
   local hook
   for hook in "${_omb_util_unload_hook[@]}"; do
     eval -- "$hook"
@@ -308,10 +309,11 @@ _omb_util_unload() {
 }
 
 _omb_util_original_PS1=$PS1
+# shellcheck disable=SC2016
 _omb_util_unload_hook+=('PS1=$_omb_util_original_PS1')
 
 _omb_util_prompt_command=()
-_omb_util_prompt_command_hook() {
+function _omb_util_prompt_command_hook {
   local status=$? lastarg=$_ hook
   for hook in "${_omb_util_prompt_command[@]}"; do
     _omb_util_setexit "$status" "$lastarg"
@@ -323,7 +325,7 @@ _omb_util_prompt_command_hook() {
 _omb_util_unload_hook+=('_omb_util_prompt_command=()')
 
 : "${_omb_util_prompt_command_setup=}"
-_omb_util_add_prompt_command() {
+function _omb_util_add_prompt_command {
   local other
   for other in "${_omb_util_prompt_command[@]}"; do
     [[ $1 == "$other" ]] && return 0
@@ -363,8 +365,17 @@ _omb_util_add_prompt_command() {
   fi
 }
 
-_omb_util_glob_expand() {
-  local set=$- shopt gignore=$GLOBIGNORE
+## @fn _omb_util_split array str [sep]
+function _omb_util_split {
+  local __set=$- IFS=${3:-$' \t\n'}
+  set -f
+  eval -- "$1=(\$2)"
+  [[ $__set == *f* ]] || set +f
+  return 0
+}
+
+function _omb_util_glob_expand {
+  local __set=$- __shopt __gignore=$GLOBIGNORE
   _omb_util_get_shopt failglob nullglob extglob
 
   shopt -u failglob
@@ -375,21 +386,21 @@ _omb_util_glob_expand() {
 
   eval -- "$1=($2)"
 
-  GLOBIGNORE=$gignore
+  GLOBIGNORE=$__gignore
   # Note: dotglob is changed by GLOBIGNORE
-  if [[ :$shopt: == *:dotglob:* ]]; then
+  if [[ :$__shopt: == *:dotglob:* ]]; then
     shopt -s dotglob
   else
     shopt -u dotglob
   fi
-  [[ $set == *f* ]] && set -f
-  [[ :$shopt: != *:extglob:* ]] && shopt -u extglob
-  [[ :$shopt: != *:nullglob:* ]] && shopt -u nullglob
-  [[ :$shopt: == *:failglob:* ]] && shopt -s failglob
+  [[ $__set == *f* ]] && set -f
+  [[ :$__shopt: != *:extglob:* ]] && shopt -u extglob
+  [[ :$__shopt: != *:nullglob:* ]] && shopt -u nullglob
+  [[ :$__shopt: == *:failglob:* ]] && shopt -s failglob
   return 0
 }
 
-_omb_util_alias() {
+function _omb_util_alias {
   case ${OMB_DEFAULT_ALIASES:-enable} in
   (disable) return 0 ;;
   (check) alias -- "${1%%=*}" &>/dev/null && return 0 ;;
@@ -399,6 +410,30 @@ _omb_util_alias() {
     return 2
   esac
   alias -- "$1"
+}
+
+function _omb_util_alias_delayed__init {
+  local _omb_name=$1 _omb_init=${FUNCNAME[1]}
+  local _omb_command=$_omb_name
+  "_omb_util_alias_select_$_omb_name"
+
+  if [[ ! $_omb_command || $_omb_command == "$_omb_name" ]]; then
+    unalias "$_omb_name"
+  else
+    alias "$_omb_name=$_omb_command"
+  fi || return 1
+
+  eval -- "function $_omb_init { command ${_omb_command:-$_omb_name} \"\$@\"; }" && "$_omb_init" "${@:2}"
+}
+function _omb_util_alias_delayed {
+  local name=$1 opts=${2-}
+  local func=_omb_util_alias_init_$name
+  eval -- "function $func { _omb_util_alias_delayed__init $name \"\$@\"; }"
+  if [[ :$opts: == *:force:* ]]; then
+    alias "$name=$func"
+  else
+    _omb_util_alias "$name=$func"
+  fi
 }
 
 function _omb_util_mktemp {

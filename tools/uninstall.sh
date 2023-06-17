@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Note: this file is intentionally written in POSIX sh so that oh-my-bash can
 # be uninstalled without bash.
@@ -11,6 +11,8 @@ _omb_uninstall_contains_omb() {
 _omb_uninstall_find_bashrc_original() {
   _omb_uninstall_bashrc_original=
   printf '%s\n' "Looking for original bash config..."
+  _omb_uninstall_old_ifs_set=${IFS+set}
+  _omb_uninstall_old_ifs=${IFS-}
   IFS='
 '
   for _omb_uninstall_file in $(printf '%s\n' ~/.bashrc.omb-backup-?????????????? | sort -r) ~/.bashrc.pre-oh-my-bash; do
@@ -19,9 +21,13 @@ _omb_uninstall_find_bashrc_original() {
     _omb_uninstall_bashrc_original=$_omb_uninstall_file
     break
   done
-  unset _omb_uninstall_file
-  IFS=' 	
-'
+  if [ "$_omb_uninstall_old_ifs_set" = set ]; then
+    IFS=$_omb_uninstall_old_ifs
+  else
+    unset -v IFS
+  fi
+  unset -v _omb_uninstall_file _omb_uninstall_old_ifs_set _omb_uninstall_old_ifs
+
   if [ -n "$_omb_uninstall_bashrc_original" ]; then
     printf '%s\n' "-> Found at '$_omb_uninstall_bashrc_original'."
   else
@@ -29,10 +35,11 @@ _omb_uninstall_find_bashrc_original() {
   fi
 }
 
-read -r -p "Are you sure you want to remove Oh My Bash? [y/N] " _omb_uninstall_confirmation
+read -r ${BASH_VERSION:+-p} "Are you sure you want to remove Oh My Bash? [y/N] " _omb_uninstall_confirmation
 if [ "$_omb_uninstall_confirmation" != y ] && [ "$_omb_uninstall_confirmation" != Y ]; then
   printf '%s\n' "Uninstall cancelled"
   unset _omb_uninstall_confirmation
+  # shellcheck disable=SC2317
   return 0 2>/dev/null || exit 0
 fi
 unset _omb_uninstall_confirmation
@@ -52,6 +59,7 @@ if ! _omb_uninstall_contains_omb ~/.bashrc; then
   fi
   printf '%s\n' "uninstall: Canceled." >&2
   unset _omb_uninstall_bashrc_original
+  # shellcheck disable=SC2317
   return 1 2>/dev/null || exit 1
 fi
 
@@ -77,6 +85,7 @@ unset _omb_uninstall_bashrc_uninstalled
 echo "Thanks for trying out Oh My Bash. It has been uninstalled."
 case $- in
 *i*)
+  # shellcheck disable=SC3044,SC3046,SC1090
   if [ -n "${BASH_VERSION-}" ]; then
     declare -f _omb_util_unload >/dev/null 2>&1 && _omb_util_unload
     source ~/.bashrc

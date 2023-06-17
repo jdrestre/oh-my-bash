@@ -12,25 +12,50 @@ set -o noclobber
 shopt -s checkwinsize
 
 # Automatically trim long paths in the prompt (requires Bash 4.x)
-PROMPT_DIRTRIM=2
+PROMPT_DIRTRIM=${PROMPT_DIRTRIM:-2}
 
 # Enable history expansion with space
 # E.g. typing !!<space> will replace the !! with your last command
 bind Space:magic-space
 
 # Turn on recursive globbing (enables ** to recurse all directories)
-shopt -s globstar 2> /dev/null                                                                                   
+shopt -s globstar 2> /dev/null
 
-# Case-insensitive globbing (used in pathname expansion)
-shopt -s nocaseglob;
+# Case-sensitive globbing (used in pathname expansion) and matching
+# (used in case, [[]], word expansions and command completions)
+if [[ ${OMB_CASE_SENSITIVE:-${CASE_SENSITIVE:-}} == true ]]; then
+   shopt -u nocaseglob
+   shopt -u nocasematch
+else
+   shopt -s nocaseglob
+   shopt -s nocasematch
+fi
 
 ## SMARTER TAB-COMPLETION (Readline bindings) ##
 
-# Perform file completion in a case insensitive fashion
-bind "set completion-ignore-case on"
+# Conditionally perform file completion in a case insensitive fashion.
+# Setting OMB_CASE_SENSITIVE to 'true' will switch from the default,
+# case insensitive, matching to the case-sensitive one
+#
+# Note: CASE_SENSITIVE is the compatibility name
+if [[ ${OMB_CASE_SENSITIVE:-${CASE_SENSITIVE:-}} == true ]]; then
+	bind "set completion-ignore-case off"
+else
+	# By default, case sensitivity is disabled.
+	bind "set completion-ignore-case on"
 
-# Treat hyphens and underscores as equivalent
-bind "set completion-map-case on"
+	# Treat hyphens and underscores as equivalent
+	# CASE_SENSITIVE must be off
+	if [[ ! ${OMB_HYPHEN_SENSITIVE-} && ${HYPHEN_INSENSITIVE} ]]; then
+		case $HYPHEN_INSENSITIVE in
+		(true)  OMB_HYPHEN_SENSITIVE=true ;;
+		(false) OMB_HYPHEN_SENSITIVE=false ;;
+		esac
+	fi
+	if [[ ${OMB_HYPHEN_SENSITIVE-} == false ]]; then
+		bind "set completion-map-case on"
+	fi
+fi
 
 # Display matches for ambiguous patterns at first tab press
 bind "set show-all-if-ambiguous on"
