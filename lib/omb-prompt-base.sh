@@ -108,6 +108,11 @@ function _omb_prompt_git {
   command git "$@"
 }
 
+function _omb_prompt_git_status_enabled {
+  [[ $(_omb_prompt_git config --get-regexp '^(oh-my-zsh|bash-it|oh-my-bash)\.hide-status$' |
+    awk '$2== "1" {hide_status = 1;} END { print hide_status; }') != "1" ]]
+}
+
 function scm {
   if [[ "$SCM_CHECK" = false ]]; then SCM=$SCM_NONE
   elif [[ -f .git/HEAD ]]; then SCM=$SCM_GIT
@@ -186,7 +191,7 @@ function git_prompt_minimal_info {
   local git_status_flags=('--porcelain')
   SCM_STATE=${SCM_THEME_PROMPT_CLEAN}
 
-  if [[ "$(_omb_prompt_git config --get bash-it.hide-status)" != "1" ]]; then
+  if _omb_prompt_git_status_enabled; then
     # Get the branch reference
     ref=$(git_clean_branch) || \
     ref=$(_omb_prompt_git rev-parse --short HEAD 2> /dev/null) || return 0
@@ -242,9 +247,9 @@ function git_status_summary {
 function git_prompt_vars {
   local details=''
   local git_status_flags=''
-  [[ "$(command git rev-parse --is-inside-work-tree 2> /dev/null)" == "true" ]] || return 1
+  [[ "$(_omb_prompt_git rev-parse --is-inside-work-tree 2> /dev/null)" == "true" ]] || return 1
   SCM_STATE=${GIT_THEME_PROMPT_CLEAN:-$SCM_THEME_PROMPT_CLEAN}
-  if [[ "$(_omb_prompt_git config --get bash-it.hide-status)" != "1" ]]; then
+  if _omb_prompt_git_status_enabled; then
     [[ "${SCM_GIT_IGNORE_UNTRACKED}" = "true" ]] && git_status_flags='-uno'
     local status_lines=$((_omb_prompt_git status --porcelain ${git_status_flags} -b 2> /dev/null ||
                           _omb_prompt_git status --porcelain ${git_status_flags}    2> /dev/null) | git_status_summary)
