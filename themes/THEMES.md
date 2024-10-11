@@ -59,6 +59,10 @@
 
 [![](demula/demula-dark.png)](demula/demula-dark.png)
 
+## `developer`
+
+[![](developer/developer_theme_2024_02_09.png)](developer/developer_theme_2024_02_09.png)
+
 ## `dos`
 
 [![](dos/dos-dark.png)](dos/dos-dark.png)
@@ -110,6 +114,10 @@
 ## `hawaii50`
 
 [![](hawaii50/hawaii50-dark.png)](hawaii50/hawaii50-dark.png)
+
+## `ht`
+
+[![](ht/ht-dark.png)](ht/ht-dark.png)
 
 ## `iterate`
 
@@ -199,6 +207,10 @@
 ## `powerline-plain`
 
 [![](powerline-plain/powerline-plain-dark.png)](powerline-plain/powerline-plain-dark.png)
+
+## `powerline-wizard`
+
+[![](powerline-wizard/powerline-wizard-dark.png)](powerline-wizard/powerline-wizard-dark.png)
 
 ## `primer`
 
