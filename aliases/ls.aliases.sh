@@ -15,7 +15,7 @@ alias lo='ls -laSFh'            # sort by size largest to smallest
 alias lr='ls -lR'               # recursive ls
 alias lt='ls -ltr'              # sort by date
 alias lu='ls -lur'              # sort by access time
-
+alias l1='ls -laihFtr'
 
 #   lr:  Full Recursive Directory Listing
 #   ------------------------------------------
