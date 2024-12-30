@@ -24,7 +24,7 @@
 # Preferred 'cp' implementation.  Determines the use of the option `-v' on the
 # first call Ref. https://github.com/ohmybash/oh-my-bash/issues/351
 function _omb_util_alias_select_cp {
-  if (tmp=$(_omb_util_mktemp); trap 'rm -f "$tmp"{,.2}' EXIT; command cp -v "$tmp" "$tmp.2" &>/dev/null); then
+  if (tmp=$(_omb_util_mktemp); trap 'command rm -f "$tmp"{,.2}' EXIT; command cp -v "$tmp" "$tmp.2" &>/dev/null); then
     _omb_command='cp -iv'
   else
     _omb_command='cp -i'
@@ -34,7 +34,7 @@ _omb_util_alias_delayed cp force
 
 # Preferred 'mv' implementation
 function _omb_util_alias_select_mv {
-  if (tmp=$(_omb_util_mktemp); trap 'rm -f "$tmp.2"' EXIT; command mv -v "$tmp" "$tmp.2" &>/dev/null); then
+  if (tmp=$(_omb_util_mktemp); trap 'command rm -f "$tmp.2"' EXIT; command mv -v "$tmp" "$tmp.2" &>/dev/null); then
     _omb_command='mv -iv'
   else
     _omb_command='mv -i'
