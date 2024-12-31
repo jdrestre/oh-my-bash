@@ -26,6 +26,19 @@ not_git=()
 # Enable globbing to include hidden directories
 shopt -s dotglob
 
+# Define the list_files_recursive function
+list_files_recursive() {
+  local dir="$1"
+  for file in "$dir"/*; do
+    if [ -d "$file" ]; then
+      echo "📁 ${DARK_BLUE}${file}/${NC}"
+      list_files_recursive "$file"
+    else
+      echo "  ${file}"
+    fi
+  done
+}
+
 # Traverse each subdirectory within the current directory
 for dir in */; do
   if [ -d "$dir/.git" ]; then
@@ -73,4 +86,5 @@ if [ ${#no_changes[@]} -gt 0 ] || [ ${#not_git[@]} -gt 0 ]; then
     echo -e "📁 ${DARK_BLUE}${dir}/${NC}: ${YELLOW}Not a Git repository${NC}"
   done
   echo -e "${BLUE}========================================== ${NC}"
+
 fi
