@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # options links to convert images into ascii code 
+# https://www.text-image.com/convert/matrix.html
 # https://manytools.org/hacker-tools/convert-images-to-ascii-art/
 # https://image-to-ascii.xmlformatter.io/
 
@@ -230,8 +231,20 @@ case $DATE in
 		echo "		El Día del Idioma Español en las Naciones Unidas se celebra anualmente el 23 de abril desde 2010. Fue establecido por el Departamento de Información Pública de la ONU para concienciar al personal de la Organización y al mundo en general acerca de la historia, la cultura y el uso del español como idioma oficial"
 	;;
 	*)
-		cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/submarine | lolcat
-		echo "It's a new day, I claim a new sun for myself. All systems online." | lolcat
-		echo ""
+		# Check for date range for pesebre
+		if [ "$MONTHNUMBER" -eq 12 ] && [ "$DAYOFMONTH" -ge 16 ] && [ "$DAYOFMONTH" -le 24 ]; then 
+		    DAY_OF_NOVENA=$(($DAYOFMONTH - 15))
+
+		    if [ -f ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/pesebre24dic ]; then 
+		        cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/pesebre24dic 
+		        echo "" 
+		        echo "Día $DAY_OF_NOVENA Novena Niño Dios" 
+		        echo ""
+		    fi
+		else
+			cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/submarine | lolcat
+			echo "It's a new day, I claim a new sun for myself. All systems online." | lolcat
+			echo ""
+		fi
 	;;
 esac
