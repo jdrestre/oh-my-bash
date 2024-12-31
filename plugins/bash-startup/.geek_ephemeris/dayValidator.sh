@@ -230,21 +230,15 @@ case $DATE in
 		echo "Día del idioma español (Ññ)" | lolcat
 		echo "		El Día del Idioma Español en las Naciones Unidas se celebra anualmente el 23 de abril desde 2010. Fue establecido por el Departamento de Información Pública de la ONU para concienciar al personal de la Organización y al mundo en general acerca de la historia, la cultura y el uso del español como idioma oficial"
 	;;
-	*)
-		# Check for date range for pesebre
-		if [ "$MONTHNUMBER" -eq 12 ] && [ "$DAYOFMONTH" -ge 16 ] && [ "$DAYOFMONTH" -le 24 ]; then 
-		    DAY_OF_NOVENA=$(($DAYOFMONTH - 15))
-
-		    if [ -f ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/pesebre24dic ]; then 
-		        cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/pesebre24dic 
-		        echo "" 
-		        echo "Día $DAY_OF_NOVENA Novena Niño Dios" 
-		        echo ""
-		    fi
-		else
-			cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/submarine | lolcat
-			echo "It's a new day, I claim a new sun for myself. All systems online." | lolcat
-			echo ""
-		fi
+	16-12|17-12|18-12|19-12|20-12|21-12|22-12|23-12|24-12)
+		cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/pesebre24dic 
+        echo "" 
+		DAY_OF_NOVENA=$(($DAYOFMONTH - 15))
+		echo "Día $DAY_OF_NOVENA Novena Niño Dios" 
+	    echo ""
 	;;
+	*)
+		cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/submarine | lolcat
+		echo "It's a new day, I claim a new sun for myself. All systems online." | lolcat
+		echo ""
 esac
