@@ -74,5 +74,7 @@ rm_custom() {
 }
 
 
-alias rm='rm_custom'        # Create alias to use the custom rm function
-alias emacs='emacs -nw'     # Run Emacs in terminal mode
+alias rm='rm_custom'          # Create alias to use the custom rm function
+alias emacs='emacs -nw'       # Run Emacs in terminal mode
+alias supd='sudo apt update'  # Update APT package lists
+alias supg='sudo apt upgrade' # Upgrade APT packages
