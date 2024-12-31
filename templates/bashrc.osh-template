@@ -9,7 +9,7 @@ export OSH=~/.oh-my-bash
 
 # Set name of the theme to load. Optionally, if you set this to "random"
 # it'll load a random theme each time that oh-my-bash is loaded.
-OSH_THEME="font"
+OSH_THEME="powerline-multiline"
 
 # If you set OSH_THEME to "random", you can ignore themes you don't like.
 # OMB_THEME_RANDOM_IGNORED=("powerbash10k" "wanelo")
@@ -95,6 +95,8 @@ completions=(
 # Add wisely, as too many aliases slow down shell startup.
 aliases=(
   general
+  ls
+  jdrestre_custom
 )
 
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-bash/plugins/*)
@@ -104,6 +106,7 @@ aliases=(
 plugins=(
   git
   bashmarks
+  emacs
 )
 
 # Which plugins would you like to conditionally load? (plugins can be found in ~/.oh-my-bash/plugins/*)
