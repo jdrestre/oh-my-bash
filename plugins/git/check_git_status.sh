@@ -6,7 +6,8 @@
 # pending changes, no changes, or that are not Git repositories.
 
 # Script title
-echo -e "\n${BLUE}========== Git Repository Status Checker ========== ${NC}\n"
+echo -e "\n${BLUE}========== Git Repository Status Checker =========="
+echo -e " ${NC}\n"
 
 # Define colors and styles
 RED='\033[0;31m'
@@ -22,11 +23,8 @@ with_changes=()
 no_changes=()
 not_git=()
 
-# Function to list files and directories recursively
-# list_files_recursive() {
-  # local dir="$1"
-  # find "$dir" -type f -or -type d
-# }
+# Enable globbing to include hidden directories
+shopt -s dotglob
 
 # Traverse each subdirectory within the current directory
 for dir in */; do
@@ -46,7 +44,7 @@ done
 
 # Display titles and summaries
 if [ ${#with_changes[@]} -gt 0 ]; then
-  echo -e "${BLUE}========== Repositories with changes ========== ${NC}"
+  echo -e "${BLUE}========== Repo with changes ========== "
   for dir in "${with_changes[@]}"; do
     echo -e "📁 ${DARK_BLUE}${dir}/${NC}: ${RED}pending changes${NC}"
     cd "$dir"
@@ -66,7 +64,7 @@ if [ ${#no_changes[@]} -gt 0 ] || [ ${#not_git[@]} -gt 0 ]; then
   if [ ${#with_changes[@]} -eq 0 ]; then
     echo -e "${BLUE}========== Repository Status ========== ${NC}"
   else
-    echo -e "${BLUE}========== Repositories with no changes or Git tracking ========== ${NC}"
+    echo -e "${BLUE}======= Repos without changes or Git tracking ======= ${NC}"
   fi
   for dir in "${no_changes[@]}"; do
     echo -e "📁 ${DARK_BLUE}${dir}/${NC}: ${GREEN}No changes${NC}"
