@@ -75,4 +75,4 @@ rm_custom() {
 
 
 alias rm='rm_custom'        # Create alias to use the custom rm function
-
+alias emacs='emacs -nw'     # Run Emacs in terminal mode
