@@ -378,9 +378,3 @@ alias gke='\gitk --all $(git log --walk-reflogs --pretty=%h)'
 # alias gke='\gitk --all $(git log --walk-reflogs --pretty=%h) &!'
 #compdef _git gk='command gitk'
 #compdef _git gke='command gitk'
-
-# Git Repository Status Checker
-# This script checks the status of each Git repository within the
-# current directory and shows a summary of repositories with
-# pending changes, no changes, or that are not Git repositories.
-alias gcheck='~/.oh-my-bash/plugins/git/check_git_status.sh'
