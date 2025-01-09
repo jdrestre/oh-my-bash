@@ -105,10 +105,11 @@ aliases=(
 # Add wisely, as too many plugins slow down shell startup.
 plugins=(
   bash-startup
+  emacs
+  upgrade_packages
   git
   bashmarks
   battery
-  emacs
 )
 
 # Which plugins would you like to conditionally load? (plugins can be found in ~/.oh-my-bash/plugins/*)
