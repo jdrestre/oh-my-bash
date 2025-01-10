@@ -79,6 +79,7 @@ alias emacs='emacs -nw'       # Run Emacs in terminal mode
 alias supd='sudo apt update'  # Update APT package lists
 alias supg='sudo apt upgrade' # Upgrade APT packages
 alias py='python3'            # Python 3 execute alias
+alias nl="nl -ba -d':' -fn -hn -i1 -l1 -n'ln' -s'  ' -v1 -w1" # Number lines
 alias edge="/mnt/c/'Program Files (x86)'/Microsoft/Edge/Application/msedge.exe"   # Open Microsoft Edge
 alias chrome="/mnt/c/'Program Files'/Google/Chrome/Application/chrome.exe" # Open Google Chrome
 alias gcheck='~/.oh-my-bash/plugins/git/check_git_status.sh' # Git Repository Status Checker
