@@ -45,8 +45,29 @@ format_commit_message() {
   local formatted_message=""
   local line_length=52
   while [ ${#message} -gt $line_length ]; do
-    formatted_message+="${message:0:$line_length}\n    "
-    message="${message:$line_length}"
+    # Find the position of the last space within the line length
+    local break_pos=$(echo "${message:0:$line_length}" | awk '{print length($0)-length($NF)}')
+    if [[ $break_pos -eq 0 ]]; then
+      break_pos=$line_length
+    fi
+    # Ensure we don't break words
+    if [[ "${message:$break_pos:1}" != " " ]]; then
+      break_pos=$(echo "${message:0:$break_pos}" | awk '{print length($0)-length($NF)}')
+    fi
+    if [[ $break_pos -eq 0 ]]; then
+      break_pos=$line_length
+    fi
+    # Adjust break position to avoid cutting words
+    while [[ "${message:$break_pos:1}" != " " && $break_pos -gt 0 ]]; do
+      break_pos=$((break_pos - 1))
+    done
+    if [[ $break_pos -eq 0 ]]; then
+      break_pos=$line_length
+    fi
+    formatted_message+="${message:0:$break_pos}\n    "
+    message="${message:$break_pos}"
+    # Remove leading spaces from the remaining message
+    message=$(echo "$message" | sed 's/^ *//')
   done
   formatted_message+="$message"
   echo -e "$formatted_message"
