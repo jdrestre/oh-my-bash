@@ -39,6 +39,48 @@ list_files_recursive() {
   done
 }
 
+# Function to format long commit messages
+format_commit_message() {
+  local message="$1"
+  local formatted_message=""
+  local line_length=52
+  while [ ${#message} -gt $line_length ]; do
+    formatted_message+="${message:0:$line_length}\n    "
+    message="${message:$line_length}"
+  done
+  formatted_message+="$message"
+  echo -e "$formatted_message"
+}
+
+# Function to display the last commit summary
+display_last_commit_summary() {
+  local dir="$1"
+  cd "$dir"
+  local short_hash=$(git log -1 --pretty=format:"%h")
+  local commit_message=$(git log -1 --pretty=format:"%s")
+  local formatted_message=$(format_commit_message "$commit_message")
+  local commit_time=$(git log -1 --pretty=format:"%cr")
+  local commit_author=$(git log -1 --pretty=format:"%an")
+  local commit_date=$(git log -1 --date=format:"%A, %d %b %Y %H:%M" --pretty=format:"%cd")
+  local files_changed=$(git diff-tree --no-commit-id --name-only -r "$short_hash")
+
+  if [ "$first_summary" = true ]; then
+    echo -e "${BLUE}========== Last Commit Summary ==========${NC}"
+    first_summary=false
+  fi
+
+  echo -e "📁 ${DARK_BLUE}${dir}/${NC}"
+  echo -e "* ${RED}${short_hash}${NC}"
+  echo -e "    ${formatted_message}"
+  echo -e "    ${GREEN}(${commit_time})${NC} <${CYAN}${commit_author}${NC}> --> ${YELLOW}${commit_date}${NC}"
+  echo -e "    Files changed:"
+  for file in $files_changed; do
+    echo -e "    ${file}"
+  done
+  echo -e "${BLUE}==========================================${NC}"
+  cd ..
+}
+
 # Traverse each subdirectory within the current directory
 for dir in */; do
   if [ -d "$dir/.git" ]; then
@@ -86,5 +128,17 @@ if [ ${#no_changes[@]} -gt 0 ] || [ ${#not_git[@]} -gt 0 ]; then
     echo -e "📁 ${DARK_BLUE}${dir}/${NC}: ${YELLOW}Not a Git repository${NC}"
   done
   echo -e "${BLUE}========================================== ${NC}"
-
 fi
+
+# Display last commit summary for all git repositories
+count=0
+first_summary=true
+total_repos=$(( ${#with_changes[@]} + ${#no_changes[@]} ))
+for dir in "${with_changes[@]}" "${no_changes[@]}"; do
+  display_last_commit_summary "$dir"
+  count=$((count + 1))
+  if (( count % 2 == 0 && count < total_repos )); then
+    read -n 1 -s -r -p "Press any key to continue..."
+    echo -e "\r\033[K"  # Clear the line after pressing a key
+  fi
+done
