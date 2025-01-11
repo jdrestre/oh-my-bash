@@ -39,18 +39,22 @@ list_files_recursive() {
   done
 }
 
-# Function to format long commit messages
 format_commit_message() {
   local message="$1"
   local formatted_message=""
   local line_length=52
   while [ ${#message} -gt $line_length ]; do
-    formatted_message+="${message:0:$line_length}\n    "
-    message="${message:$line_length}"
+    local cut_off=$line_length
+    while [ ${message:$cut_off:1} != " " ] && [ $cut_off -gt 0 ]; do
+      ((cut_off--))
+    done
+    formatted_message+="${message:0:$cut_off}\n    "
+    message="${message:$cut_off+1}"
   done
   formatted_message+="$message"
   echo -e "$formatted_message"
 }
+
 
 # Function to display the last commit summary
 display_last_commit_summary() {
