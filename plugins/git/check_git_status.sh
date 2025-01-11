@@ -45,7 +45,7 @@ format_commit_message() {
   local line_length=52
   while [ ${#message} -gt $line_length ]; do
     local cut_off=$line_length
-    while [ ${message:$cut_off:1} != " " ] && [ $cut_off -gt 0 ]; do
+    while [ "${message:$cut_off:1}" != " " ] && [ $cut_off -gt 0 ]; do
       ((cut_off--))
     done
     formatted_message+="${message:0:$cut_off}\n    "
