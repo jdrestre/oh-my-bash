@@ -102,6 +102,15 @@ display_last_commit_summary() {
   cd ..
 }
 
+# Function to get the last commit timestamp
+get_last_commit_timestamp() {
+  local dir="$1"
+  cd "$dir"
+  local timestamp=$(git log -1 --pretty=format:"%ct")
+  cd ..
+  echo "$timestamp"
+}
+
 # Traverse each subdirectory within the current directory
 for dir in */; do
   if [ -d "$dir/.git" ]; then
@@ -155,7 +164,17 @@ fi
 count=0
 first_summary=true
 total_repos=$(( ${#with_changes[@]} + ${#no_changes[@]} ))
+
+# Create an associative array to store directories and their commit timestamps
+declare -A repo_timestamps
 for dir in "${with_changes[@]}" "${no_changes[@]}"; do
+  repo_timestamps["$dir"]=$(get_last_commit_timestamp "$dir")
+done
+
+# Sort directories by their commit timestamps in descending order
+sorted_dirs=($(for dir in "${!repo_timestamps[@]}"; do echo "${repo_timestamps[$dir]}:$dir"; done | sort -t: -k1,1nr | cut -d: -f2))
+
+for dir in "${sorted_dirs[@]}"; do
   display_last_commit_summary "$dir"
   count=$((count + 1))
   if (( count % 2 == 0 && count < total_repos )); then
