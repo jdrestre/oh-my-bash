@@ -207,7 +207,7 @@ case $DATE in
 		echo ""
 	;;
 	13-01)
-		cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/drepressionFight.txt | lolcat
+		cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/depressionFight.txt | lolcat
 		echo ""
 		echo 'World day to fight depression' | lolcat
 		echo "Depression (major depressive disorder) is a common and serious medical illness that negatively affects how you feel, the way you think and how you act. Fortunately, it is also treatable. Depression causes feelings of sadness and/or a loss of interest in activities you once enjoyed. It can lead to a variety of emotional and physical problems and can decrease your ability to function at work and at home."
