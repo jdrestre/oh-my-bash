@@ -73,8 +73,26 @@ rm_custom() {
   fi
 }
 
+# Function to perform custom cat operations
+cat_custom() {
+  if [ $# -eq 0 ]; then
+    echo "cat: missing operand"
+    echo "Try 'cat --help' for more information."
+    return 1
+  fi
+
+  for file in "$@"; do
+    if [ ! -e "$file" ]; then
+      echo "cat: $file: No such file or directory"
+      return 1
+    fi
+  done
+
+  cat "$@" | fold -s -w 80 | sed "/^$/d"
+}
 
 alias rm='rm_custom'          # Create alias to use the custom rm function
+alias cat='cat_custom'        # Create alias to use the custom cat function
 alias emacs='emacs -nw'       # Run Emacs in terminal mode
 alias supd='sudo apt update'  # Update APT package lists
 alias supg='sudo apt upgrade' # Upgrade APT packages
@@ -87,4 +105,4 @@ alias gcheck='~/.oh-my-bash/plugins/git/check_git_status.sh' # Git Repository St
 # current directory and shows a summary of repositories with
 # pending changes, no changes, or that are not Git repositories.
 alias gsl='~/.oh-my-bash/plugins/git/superlog.sh' # Git Superlog + Files Changed
-# Muestra el log detallado y cuenta modificaciones por archivo, ordenando y listando hasta el primer archivo con una sola modificación
+# Shows detailed log and counts modifications per file, sorting and listing up to the first file with a single modification
