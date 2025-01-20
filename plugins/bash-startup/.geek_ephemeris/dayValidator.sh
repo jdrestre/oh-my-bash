@@ -237,6 +237,12 @@ case $DATE in
 		echo "Día $DAY_OF_NOVENA Novena Niño Dios" 
 	    echo ""
 	;;
+		20-01)
+		cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/worldpenguinday.txt | lolcat
+		echo ""
+		echo "World Penguin Day" | lolcat
+		echo "		Date proposed with the intention of raising awareness about the preservation, protection and care of these peculiar animals."
+	;;
 	*)
 		cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/submarine | lolcat
 		echo "It's a new day, I claim a new sun for myself. All systems online." | lolcat
