@@ -8,13 +8,13 @@ upgrade_pkg() {
     sudo apt-get upgrade -y
 
     # Check if there are any packages that could not be upgraded to continue with the next step or stop the script
-    if [ $(apt-get -s upgrade | grep "^Inst" | wc -l) -eq 0 ]; then
+    if [ $(apt list --upgradable 2>/dev/null | grep -v "Listing..." | wc -l) -eq 0 ]; then
         echo "All packages are up to date by jdrestre"
         return 0
     fi
 
     # Create a list of upgradable packages
-    upgradable=$(apt-get -s upgrade | grep "^Inst" | awk '{print $2}')
+    upgradable=$(apt list --upgradable 2>/dev/null | grep -v "Listing..." | awk -F/ '{print $1}')
 
     # Loop through and upgrade each package
     for pkg in $upgradable; do
@@ -23,9 +23,9 @@ upgrade_pkg() {
 
     # Check if there are any packages that could not be upgraded
     echo "Checking for packages that could not be upgraded..."
-    if [ $(apt-get -s upgrade | grep "^Inst" | wc -l) -gt 0 ]; then
+    if [ $(apt list --upgradable 2>/dev/null | grep -v "Listing..." | wc -l) -gt 0 ]; then
         echo "Some packages could not be upgraded."
     else
-        echo "All packages have been successfully upgraded."
+        echo "All packages have been successfully upgraded by jdrestre."
     fi
 }
