@@ -243,6 +243,12 @@ case $DATE in
 		echo "World Penguin Day" | lolcat
 		echo "		Date proposed with the intention of raising awareness about the preservation, protection and care of these peculiar animals."
 	;;
+		21-01)
+		cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/hugday.txt | lolcat
+		echo ""
+		echo "International Hug Day" | lolcat
+		echo "		International Hug Day, celebrated every January 21 since 1986, reminds us of the importance of connecting through physical contact. Created by Kevin Zaborney, this date was born as a call to action in the face of the lack of public displays of affection, even among families."
+	;;
 	*)
 		cat ~/.oh-my-bash/plugins/bash-startup/.geek_ephemeris/welcomePictures/submarine | lolcat
 		echo "It's a new day, I claim a new sun for myself. All systems online." | lolcat
