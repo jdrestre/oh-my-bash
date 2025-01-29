@@ -171,9 +171,17 @@
 
 [![](n0qorg/n0qorg-dark.png)](n0qorg/n0qorg-dark.png)
 
+## `nekolight`
+
+[![](nekolight/nekolight-dark.jpg)](nekolight/nekolight-dark.jpg)
+
 ## `nekonight`
 
 [![](nekonight/nekonight-dark.jpg)](nekonight/nekonight-dark.jpg)
+
+## `nekonight_moon`
+
+[![](nekonight_moon/nekonight_moon-dark.jpg)](nekonight_moon/nekonight_moon-dark.jpg)
 
 ## `nwinkler`
 
