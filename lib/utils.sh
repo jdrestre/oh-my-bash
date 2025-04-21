@@ -437,10 +437,13 @@ function _omb_util_split_lines {
   return 0
 }
 
-## @fn _omb_util_array_remove array_name value
+## @fn _omb_util_array_contains array_name value
 function _omb_util_array_contains {
+  # When the array does not have any elements, we always fail.
+  eval "((\${#$1[@]}))" || return 1
+
   [[ $1 == ret ]] ||
-    eval "local -a ret=(\"\${$2[@]}\")"
+    eval "local -a ret=(\"\${$1[@]}\")"
   local value
   for value in "${ret[@]}"; do
     if [[ $value == "$2" ]]; then
