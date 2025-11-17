@@ -18,59 +18,139 @@ rm_custom() {
     return 0
   fi
 
-  # Verify each file exists
-  for file in "$@"; do
-    if [ ! -e "$file" ]; then
-      echo "rm: cannot remove '$file': No such file or directory"
-      return 1
+  # MEJORA 1: Detectar flags y usar rm original directamente
+  # Esto permite usar: rm -f, rm -rf, rm -i, etc.
+  local has_flags=false
+  for arg in "$@"; do
+    if [[ "$arg" == -* ]]; then
+      has_flags=true
+      break
     fi
   done
 
-  # Initialize counters
-  count_files_listed=0
-  count_dirs_listed=0
-  count_files_deleted=0
-  count_dirs_deleted=0
+  if $has_flags; then
+    original_rm "$@"
+    return $?
+  fi
+
+  # MEJORA 2: No fallar todo si un archivo no existe, solo advertir
+  local files_to_delete=()
+  local files_not_found=0
   
-  # List files and directories to be deleted
   for file in "$@"; do
+    if [ ! -e "$file" ]; then
+      echo "rm: cannot remove '$file': No such file or directory" >&2
+      ((files_not_found++))
+    else
+      files_to_delete+=("$file")
+    fi
+  done
+
+  # Si no hay archivos válidos, salir
+  if [ ${#files_to_delete[@]} -eq 0 ]; then
+    return 1
+  fi
+
+  # Initialize counters
+  local count_files_listed=0
+  local count_dirs_listed=0
+  
+  # MEJORA 3: Optimizar conteo - guardar resultados de find en arrays
+  # En vez de ejecutar find múltiples veces
+  echo ""
+  for file in "${files_to_delete[@]}"; do
     if [ -d "$file" ]; then
       echo "Dir: $file"
-      find "$file" -type f -print
-      count_dirs_listed=$((count_dirs_listed + $(find "$file" -type d | wc -l)))
-      count_files_listed=$((count_files_listed + $(find "$file" -type f | wc -l)))
+      
+      # Guardar archivos y directorios en arrays (UN solo find por tipo)
+      mapfile -t dir_files < <(find "$file" -type f 2>/dev/null)
+      mapfile -t dir_subdirs < <(find "$file" -type d 2>/dev/null)
+      
+      # Mostrar archivos (limitar a primeros 20 para no saturar)
+      local file_count=${#dir_files[@]}
+      if [ $file_count -le 20 ]; then
+        printf '%s\n' "${dir_files[@]}"
+      else
+        printf '%s\n' "${dir_files[@]:0:20}"
+        echo "... and $((file_count - 20)) more files"
+      fi
+      
+      count_files_listed=$((count_files_listed + file_count))
+      count_dirs_listed=$((count_dirs_listed + ${#dir_subdirs[@]}))
     else
       echo "File: $file"
-      count_files_listed=$((count_files_listed + 1))
+      ((count_files_listed++))
     fi
   done
   
+  echo ""
   # Display the summary of files and directories to delete
   echo "Files to delete: $count_files_listed"
   echo "Dirs to delete (including subdirs): $count_dirs_listed"
   
-  # Prompt user for deletion confirmation
-  read -p "Delete? [y/N] " choice
-  if [[ "$choice" == [yY] ]]; then
-    # Delete files and directories if confirmed
-    for file in "$@"; do
-      if [ -d "$file" ]; then
-        count_dirs_deleted=$((count_dirs_deleted + $(find "$file" -type d | wc -l)))
-        count_files_deleted=$((count_files_deleted + $(find "$file" -type f | wc -l)))
-        original_rm -rf "$file"
-      else
-        count_files_deleted=$((count_files_deleted + 1))
-        original_rm -f "$file"
-      fi
-    done
+  # MEJORA 4: Confirmación adicional para directorios grandes (>30 archivos)
+  if [ $count_files_listed -gt 30 ]; then
+    echo ""
+    echo "⚠️  WARNING: This will delete more than 30 files!"
+    read -r -p "Are you sure you want to continue? [y/N] " confirm_large
     
-    # Display deletion summary
-    echo "Files deleted: $count_files_deleted"
-    echo "Dirs deleted (including subdirs): $count_dirs_deleted"
-  else
-    # If cancelled, display message
-    echo "Cancelled."
+    case "$confirm_large" in
+      [yY]|[yY][eE][sS])
+        # Continuar con la confirmación normal
+        ;;
+      *)
+        echo "Cancelled."
+        return 1
+        ;;
+    esac
   fi
+  
+  # MEJORA 5: Aceptar múltiples variantes de confirmación
+  read -r -p "Delete? [y/N] " choice
+  
+  case "$choice" in
+    [yY]|[yY][eE][sS])
+      # Delete files and directories if confirmed
+      local count_files_deleted=0
+      local count_dirs_deleted=0
+      local failed=0
+      
+      for file in "${files_to_delete[@]}"; do
+        if [ -d "$file" ]; then
+          # MEJORA 5: Reutilizar conteo previo en vez de ejecutar find otra vez
+          # Contar antes de borrar
+          local dir_file_count=$(find "$file" -type f 2>/dev/null | wc -l)
+          local dir_dir_count=$(find "$file" -type d 2>/dev/null | wc -l)
+          
+          if original_rm -rf "$file" 2>/dev/null; then
+            count_files_deleted=$((count_files_deleted + dir_file_count))
+            count_dirs_deleted=$((count_dirs_deleted + dir_dir_count))
+          else
+            echo "Warning: Could not delete directory '$file'" >&2
+            ((failed++))
+          fi
+        else
+          if original_rm -f "$file" 2>/dev/null; then
+            ((count_files_deleted++))
+          else
+            echo "Warning: Could not delete file '$file'" >&2
+            ((failed++))
+          fi
+        fi
+      done
+      
+      # Display deletion summary
+      echo ""
+      echo "Files deleted: $count_files_deleted"
+      echo "Dirs deleted (including subdirs): $count_dirs_deleted"
+      [ $failed -gt 0 ] && echo "Failed to delete $failed item(s)." >&2
+      ;;
+    *)
+      # If cancelled, display message
+      echo "Cancelled."
+      return 1
+      ;;
+  esac
 }
 
 # Function to perform custom cat operations
