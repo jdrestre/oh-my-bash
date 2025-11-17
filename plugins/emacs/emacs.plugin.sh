@@ -32,7 +32,7 @@ function cemacs {
             local failed=0
             
             for file in "${files[@]}"; do
-                if rm -f "$file" 2>/dev/null; then
+                if command rm -f -- "$file" 2>/dev/null; then
                     ((deleted++))
                 else
                     echo "Warning: Could not delete '$file'" >&2
