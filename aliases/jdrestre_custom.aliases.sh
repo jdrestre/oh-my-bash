@@ -153,22 +153,179 @@ rm_custom() {
   esac
 }
 
+# Define alias for original cat command
+alias original_cat='/bin/cat'
+
 # Function to perform custom cat operations
 cat_custom() {
+  # Check if no arguments are provided (allow stdin)
   if [ $# -eq 0 ]; then
-    echo "cat: missing operand"
-    echo "Try 'cat --help' for more information."
-    return 1
+    # Read from stdin
+    original_cat
+    return $?
   fi
 
-  for file in "$@"; do
+  # MEJORA 1: Parse custom flags
+  local apply_wrap=false
+  local apply_compact=false
+  local wrap_width=80
+  local files=()
+  
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --wrap|-w)
+        apply_wrap=true
+        shift
+        ;;
+      --compact|-c)
+        apply_compact=true
+        shift
+        ;;
+      --wrap=*)
+        apply_wrap=true
+        wrap_width="${1#*=}"
+        shift
+        ;;
+      --help)
+        echo "Usage: cat [OPTION]... [FILE]..."
+        echo "Concatenate FILE(s) to standard output."
+        echo ""
+        echo "Custom options:"
+        echo "  -w, --wrap         wrap long lines at 80 characters"
+        echo "  --wrap=WIDTH       wrap long lines at WIDTH characters"
+        echo "  -c, --compact      remove empty lines"
+        echo "  --examples         show usage examples and guide"
+        echo ""
+        echo "Standard cat options:"
+        original_cat --help 2>&1 | tail -n +3
+        return 0
+        ;;
+      --examples)
+        echo "╔═══════════════════════════════════════════════════════════════╗"
+        echo "║           CAT CUSTOM - EXAMPLES & USE CASES                   ║"
+        echo "╚═══════════════════════════════════════════════════════════════╝"
+        echo ""
+        echo "📖 BASIC USAGE:"
+        echo "  cat file.txt                    Show file as-is (no formatting)"
+        echo "  cat file1.txt file2.txt         Concatenate multiple files"
+        echo ""
+        echo "🔧 CUSTOM FORMATTING OPTIONS:"
+        echo "  cat --wrap file.txt             Wrap long lines at 80 characters"
+        echo "  cat --wrap=120 file.txt         Wrap at custom width (120 chars)"
+        echo "  cat --compact file.txt          Remove all empty lines"
+        echo "  cat -w -c file.txt              Wrap AND compact (both)"
+        echo ""
+        echo "📚 WHEN TO USE WHAT:"
+        echo "  Code files (.py, .js, .java):   cat script.py        (no flags)"
+        echo "  JSON/XML/CSV data:              cat data.json        (no flags)"
+        echo "  Configuration files:            cat .env             (no flags)"
+        echo "  Long emails/text:               cat --wrap email.txt"
+        echo "  Logs with empty lines:          cat --compact app.log"
+        echo "  Reading documents:              cat -w -c document.txt"
+        echo ""
+        echo "🎯 STANDARD CAT FLAGS ALSO WORK:"
+        echo "  cat -n file.txt                 Number all output lines"
+        echo "  cat -b file.txt                 Number non-empty lines only"
+        echo "  cat -A file.txt                 Show all characters (tabs, EOL)"
+        echo ""
+        echo "💡 PRO TIPS:"
+        echo "  • Don't use formatting flags on code or structured data"
+        echo "  • Binary files are auto-detected (no formatting applied)"
+        echo "  • Use --wrap for better readability of long text"
+        echo "  • Use --compact to clean up logs and verbose output"
+        echo "  • Combine flags: cat -w -c for wrap + compact together"
+        echo ""
+        echo "───────────────────────────────────────────────────────────────"
+        echo "                                                     by jdrestre"
+        echo "───────────────────────────────────────────────────────────────"
+        return 0
+        ;;
+      --version)
+        original_cat --version
+        return 0
+        ;;
+      -*)
+        # MEJORA 2: Any other flag, use original cat
+        original_cat "$@"
+        return $?
+        ;;
+      *)
+        # It's a file
+        files+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  # If no files specified after parsing flags, use stdin
+  if [ ${#files[@]} -eq 0 ]; then
+    if $apply_wrap || $apply_compact; then
+      local cmd="original_cat"
+      $apply_wrap && cmd="$cmd | fold -s -w $wrap_width"
+      $apply_compact && cmd="$cmd | sed '/^$/d'"
+      eval "$cmd"
+    else
+      original_cat
+    fi
+    return $?
+  fi
+
+  # MEJORA 3: Validate files but don't fail all if one is missing
+  local valid_files=()
+  local has_errors=false
+  
+  for file in "${files[@]}"; do
     if [ ! -e "$file" ]; then
-      echo "cat: $file: No such file or directory"
-      return 1
+      echo "cat: $file: No such file or directory" >&2
+      has_errors=true
+    elif [ -d "$file" ]; then
+      echo "cat: $file: Is a directory" >&2
+      has_errors=true
+    else
+      valid_files+=("$file")
     fi
   done
 
-  cat "$@" | fold -s -w 80 | sed "/^$/d"
+  # If no valid files, return error
+  if [ ${#valid_files[@]} -eq 0 ]; then
+    return 1
+  fi
+
+  # MEJORA 4: Process valid files
+  if $apply_wrap || $apply_compact; then
+    # Apply custom formatting
+    for file in "${valid_files[@]}"; do
+      # MEJORA 5: Check if file is binary
+      if file -b "$file" | grep -q "text"; then
+        # Text file, apply formatting
+        if $apply_wrap && $apply_compact; then
+          original_cat "$file" | fold -s -w "$wrap_width" | sed '/^$/d'
+        elif $apply_wrap; then
+          original_cat "$file" | fold -s -w "$wrap_width"
+        elif $apply_compact; then
+          original_cat "$file" | sed '/^$/d'
+        fi
+      else
+        # Binary file, show warning and use original cat
+        echo "cat: $file: binary file detected, showing without formatting" >&2
+        original_cat "$file"
+      fi
+    done
+  else
+    # No custom formatting, use original cat
+    original_cat "${valid_files[@]}"
+  fi
+
+  # MEJORA 6: Show custom footer with help info
+  echo ""
+  echo "───────────────────────────────────────────────────────────────"
+  echo "💡 Custom options: cat --wrap | cat --compact | cat -w -c"
+  echo "📖 More info: cat --examples"
+  echo "                                                     by jdrestre"
+  echo "───────────────────────────────────────────────────────────────"
+
+  # Return error code if there were any errors
+  [ "$has_errors" = true ] && return 1 || return 0
 }
 
 alias rm='rm_custom'          # Create alias to use the custom rm function
