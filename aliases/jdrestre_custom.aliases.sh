@@ -12,32 +12,107 @@ rm_custom() {
     return 1
   fi
 
-  # Check for --help or --version flags and call original rm
-  if [[ "$1" == "--help" || "$1" == "--version" ]]; then
-    original_rm "$1"
-    return 0
-  fi
-
-  # MEJORA 1: Detectar flags y usar rm original directamente
-  # Esto permite usar: rm -f, rm -rf, rm -i, etc.
-  local has_flags=false
+  # ---
+  # MEJORA (FIX BUG 1): Detectar flags estándar ANTES de parsear
+  # Esto soluciona el bug 'rm file.txt -f'
+  # ---
   for arg in "$@"; do
-    if [[ "$arg" == -* ]]; then
-      has_flags=true
-      break
+    # Si el argumento EMPIEZA con '-' PERO NO es uno de nuestros flags
+    if [[ "$arg" == -* && "$arg" != "--help" && "$arg" != "--examples" && "$arg" != "--version" ]]; then
+      # Es un flag estándar (como -f, -r, -rf, -i).
+      # Ejecutar el comando original con TODOS los argumentos originales y salir.
+      original_rm "$@"
+      return $?
     fi
   done
 
-  if $has_flags; then
-    original_rm "$@"
-    return $?
-  fi
+  # ---
+  # MEJORA 1: Parseo de argumentos custom (inspirado en cat_custom)
+  # ---
+  local files_to_process=()
+  # (MEJORA 2) Declarar arrays asociativos para guardar conteos
+  declare -A file_counts
+  declare -A dir_counts
+
+  # Parsear argumentos (ahora sabemos que NO hay flags estándar)
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      --help)
+        echo "Usage: rm [OPTION]... [FILE]..."
+        echo "Remove (unlink) the FILE(s)."
+        echo ""
+        echo "Custom options (jdrestre):"
+        echo "  --examples       Show custom usage examples and safety guide"
+        echo ""
+        echo "Standard rm options:"
+        # Muestra la ayuda original, pero omite las primeras líneas
+        original_rm --help 2>&1 | tail -n +3
+        return 0
+        ;;
+        
+      --examples)
+        echo "╔═══════════════════════════════════════════════════════════════╗"
+        echo "║           RM CUSTOM - EXAMPLES & SAFETY GUIDE               ║"
+        echo "╚═══════════════════════════════════════════════════════════════╝"
+        echo ""
+        echo "📖 BASIC USAGE (INTERACTIVE):"
+        echo "  rm file.txt           Show summary, ask for [y/N] confirmation"
+        echo "  rm dir/             Show summary of files/subdirs, ask [y/N]"
+        echo "  rm file1.txt dir2/  Combine multiple targets into one prompt"
+        echo ""
+        echo "⚠️ BYPASSING CUSTOM RM (USING STANDARD RM):"
+        echo "  rm -f file.txt        Bypass prompt, force delete (standard rm)"
+        echo "  rm -rf directory/     Bypass prompt, force recursive delete"
+        echo "  rm -i file.txt        Use standard rm's interactive prompt"
+        echo "  /bin/rm [args]      Use the original rm command directly"
+        echo ""
+        echo "🎯 SAFETY FEATURES OF THIS CUSTOM RM:"
+        echo "  • Shows a summary of ALL files and directories to be deleted."
+        echo "  • Requires a single 'y' confirmation before deleting ANYTHING."
+        echo "  • Warns if a file doesn't exist but continues with valid ones."
+        echo "  • Asks for a *second* confirmation if > 30 files are targeted."
+        echo ""
+        echo "💡 PRO TIPS:"
+        echo "  • Use this (rm) for safe, interactive deletion."
+        echo "  • Use 'rm -f' or 'rm -rf' when you are 100% sure (e.g., in scripts)."
+        echo "  • This custom function *only* runs when NO flags (like -f, -r) are used."
+        echo ""
+        echo "⚙️ HOW DOES FLAG HANDLING WORK? (THE BUG FIX):"
+        echo "  • The original '/bin/rm' command is smart: 'rm -f file' and 'rm file -f' both work."
+        echo "  • This script *imitates* that: it first checks ALL arguments."
+        echo "  • If it finds ANY standard flag (-f, -r, -i) ANYWHERE..."
+        echo "  • ...it cancels interactive mode and runs the original '/bin/rm'"
+        echo "  • with all your arguments (e.g., 'original_rm file.txt -f')."
+        echo "  • The interactive summary ONLY runs if NO standard flags are present."
+        echo ""
+        echo "───────────────────────────────────────────────────────────────"
+        echo "                                                 by jdrestre"
+        echo "───────────────────────────────────────────────────────────────"
+        return 0
+        ;;
+
+      # (FIX BUG 1) Ya no necesitamos el caso -*), pues se maneja arriba
+      # -*)
+      #   original_rm "$@"
+      #   return $?
+      #   ;;
+
+      *)
+        # Es un archivo o directorio
+        files_to_process+=("$1")
+        shift
+        ;;
+    esac
+  done
+  # ... Fin del parseo de argumentos ---
+
 
   # MEJORA 2: No fallar todo si un archivo no existe, solo advertir
   local files_to_delete=()
   local files_not_found=0
   
-  for file in "$@"; do
+  # Usar la lista de archivos procesados, no "$@"
+  for file in "${files_to_process[@]}"; do
     if [ ! -e "$file" ]; then
       echo "rm: cannot remove '$file': No such file or directory" >&2
       ((files_not_found++))
@@ -56,7 +131,6 @@ rm_custom() {
   local count_dirs_listed=0
   
   # MEJORA 3: Optimizar conteo - guardar resultados de find en arrays
-  # En vez de ejecutar find múltiples veces
   echo ""
   for file in "${files_to_delete[@]}"; do
     if [ -d "$file" ]; then
@@ -64,17 +138,26 @@ rm_custom() {
       
       # Guardar archivos y directorios en arrays (UN solo find por tipo)
       mapfile -t dir_files < <(find "$file" -type f 2>/dev/null)
+      
+      # --- FIX ---
+      # Añadir la línea que faltaba para buscar directorios
       mapfile -t dir_subdirs < <(find "$file" -type d 2>/dev/null)
       
-      # Mostrar archivos (limitar a primeros 20 para no saturar)
+      # (MEJORA 3 - Pulido) Añadir feedback para directorios vacíos
       local file_count=${#dir_files[@]}
-      if [ $file_count -le 20 ]; then
+      if [ $file_count -eq 0 ]; then
+        echo "  (Directory is empty)"
+      elif [ $file_count -le 20 ]; then
         printf '%s\n' "${dir_files[@]}"
       else
         printf '%s\n' "${dir_files[@]:0:20}"
         echo "... and $((file_count - 20)) more files"
       fi
       
+      # (MEJORA 2) Guardar conteos para usarlos en MEJORA 5
+      file_counts["$file"]=$file_count
+      dir_counts["$file"]=${#dir_subdirs[@]}
+
       count_files_listed=$((count_files_listed + file_count))
       count_dirs_listed=$((count_dirs_listed + ${#dir_subdirs[@]}))
     else
@@ -100,12 +183,19 @@ rm_custom() {
         ;;
       *)
         echo "Cancelled."
+        # AÑADIR FOOTER (al cancelar)
+        echo ""
+        echo "───────────────────────────────────────────────────────────────"
+        echo " ⚡️ Custom rm_custom (interactive) cancelled.     by jdrestre"
+        echo " 📖 Use 'rm --examples' for more info."
+        echo "───────────────────────────────────────────────────────────────"
         return 1
         ;;
     esac
   fi
   
   # MEJORA 5: Aceptar múltiples variantes de confirmación
+  echo ""
   read -r -p "Delete? [y/N] " choice
   
   case "$choice" in
@@ -117,10 +207,9 @@ rm_custom() {
       
       for file in "${files_to_delete[@]}"; do
         if [ -d "$file" ]; then
-          # MEJORA 5: Reutilizar conteo previo en vez de ejecutar find otra vez
-          # Contar antes de borrar
-          local dir_file_count=$(find "$file" -type f 2>/dev/null | wc -l)
-          local dir_dir_count=$(find "$file" -type d 2>/dev/null | wc -l)
+          # (MEJORA 2) Reutilizar conteos de MEJORA 3 en vez de ejecutar find
+          local dir_file_count=${file_counts["$file"]}
+          local dir_dir_count=${dir_counts["$file"]}
           
           if original_rm -rf "$file" 2>/dev/null; then
             count_files_deleted=$((count_files_deleted + dir_file_count))
@@ -144,10 +233,24 @@ rm_custom() {
       echo "Files deleted: $count_files_deleted"
       echo "Dirs deleted (including subdirs): $count_dirs_deleted"
       [ $failed -gt 0 ] && echo "Failed to delete $failed item(s)." >&2
+      
+      # AÑADIR FOOTER (al completar)
+      echo ""
+      echo "───────────────────────────────────────────────────────────────"
+      echo " ⚡️ Custom rm_custom (interactive) executed.      by jdrestre"
+      echo " 📖 Use 'rm -f' or 'rm -rf' to bypass this prompt."
+      echo "───────────────────────────────────────────────────────────────"
       ;;
     *)
       # If cancelled, display message
       echo "Cancelled."
+      
+      # AÑADIR FOOTER (al cancelar)
+      echo ""
+      echo "───────────────────────────────────────────────────────────────"
+      echo " ⚡️ Custom rm_custom (interactive) cancelled.     by jdrestre"
+      echo " 📖 Use 'rm --examples' for more info."
+      echo "───────────────────────────────────────────────────────────────"
       return 1
       ;;
   esac
