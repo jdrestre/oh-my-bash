@@ -5,7 +5,11 @@ source "$OSH/themes/powerline-multiline/powerline-multiline.base.sh"
 PROMPT_CHAR=${POWERLINE_PROMPT_CHAR:="❯"}
 POWERLINE_LEFT_SEPARATOR=${POWERLINE_LEFT_SEPARATOR:=""}
 POWERLINE_RIGHT_SEPARATOR=${POWERLINE_RIGHT_SEPARATOR:=""}
-
+# Path truncation settings
+# Enable intelligent path truncation (true/false)
+POWERLINE_ENABLE_PATH_TRUNCATION=${POWERLINE_ENABLE_PATH_TRUNCATION:=true}
+# Maximum width for the path before truncation (in characters)
+POWERLINE_PATH_MAX_WIDTH=${POWERLINE_PATH_MAX_WIDTH:=40}
 USER_INFO_SSH_CHAR=${POWERLINE_USER_INFO_SSH_CHAR:=" "}
 USER_INFO_THEME_PROMPT_COLOR=32
 USER_INFO_THEME_PROMPT_SECONDARY_COLOR="-"

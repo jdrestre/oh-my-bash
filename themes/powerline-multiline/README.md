@@ -22,6 +22,34 @@ A colorful multiline theme, where the first line shows information about your sh
 
 This theme is pretty configurable, all the configuration is done by setting environment variables.
 
+### Path Truncation (NEW)
+
+The theme now includes intelligent path truncation to handle very long directory paths. By default, this feature is enabled. You can control it with:
+
+    # Enable/disable path truncation (default: true)
+    POWERLINE_ENABLE_PATH_TRUNCATION=true
+    
+    # Maximum width for the path before truncation (default: 40)
+    POWERLINE_PATH_MAX_WIDTH=40
+
+The truncation strategy works as follows:
+1. If the path fits within the max width, it's displayed normally
+2. If too long, directory names are abbreviated to their first letter: `/home/user/projects` → `~/p/projects`
+3. If still too long, only the last 2 directories are shown: `/a/very/long/path/here` → `~/path/here`
+4. Final fallback shows only the current directory name
+
+Examples:
+- Normal path: `~/my-project/src/components`
+- Abbreviated: `~/m/s/components` (if too long)
+- Minimal: `~/components` (if very long)
+
+### Terminal Width Adaptation (NEW)
+
+The theme now adapts dynamically to your terminal width:
+- The right prompt segments (clock, battery, user info) are intelligently hidden if the terminal is too narrow
+- The left prompt reserves approximately 70% of the terminal width, leaving 30% for the right prompt
+- This prevents text overlap and ensures readability on small terminals
+
 ### User Information
 
 By default, the username and hostname are shown on the right hand side, but you can change this behavior by setting the value of the following variable:
